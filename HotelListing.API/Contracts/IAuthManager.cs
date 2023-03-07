@@ -7,6 +7,10 @@ namespace HotelListing.NET6.Contracts
     {
         Task<IEnumerable<IdentityError>> Register(ApiUserDto userDto);
 
-        Task<bool> Login(LoginDto loginDto);
+        Task<AuthResponseDto> Login(LoginDto loginDto);
+
+        Task<string> CreateRefershToken();
+
+        Task<AuthResponseDto> VerifyRefreshToken(AuthResponseDto request);
     }
 }
