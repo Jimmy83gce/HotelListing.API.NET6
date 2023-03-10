@@ -131,7 +131,8 @@ builder.Services.AddHealthChecks()
     .AddCheck<CustomHealthCheck>("Custom Health Check",
                                     failureStatus: HealthStatus.Degraded,
                                     tags: new[] { "custom"} )
-    .AddSqlServer(connectionString);
+    .AddSqlServer(connectionString)
+    .AddDbContextCheck<HotelListingDbContext>();
 
 builder.Services.AddControllers().AddOData(options =>
 {
