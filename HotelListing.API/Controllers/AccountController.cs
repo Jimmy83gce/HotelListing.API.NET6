@@ -11,9 +11,12 @@ namespace HotelListing.NET6.Controllers
     {
         private readonly IAuthManager _authManager;
 
-        public AccountController(IAuthManager authManager)
+        public ILogger<AccountController> _logger;
+
+        public AccountController(IAuthManager authManager, ILogger<AccountController> logger)
         {
             _authManager = authManager;
+            _logger = logger;
         }
 
         // POST: api/Account/register
@@ -24,11 +27,12 @@ namespace HotelListing.NET6.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult> Register([FromBody] ApiUserDto apiUserDto)
         {
+            _logger.LogInformation($"Registration Attempt for{apiUserDto.Email}");
             var errors = await _authManager.Register(apiUserDto);
 
-            if(errors.Any())
+            if (errors.Any())
             {
-                foreach(var error in errors)
+                foreach (var error in errors)
                 {
                     ModelState.AddModelError(error.Code, error.Description);
                 }
@@ -48,6 +52,7 @@ namespace HotelListing.NET6.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<AuthResponseDto>> Login([FromBody] LoginDto loginDto)
         {
+            _logger.LogInformation($"Login Attempt for {loginDto.Email}");
             var authResponse = await _authManager.Login(loginDto);
 
             if(authResponse == null)

@@ -3,6 +3,8 @@ using HotelListing.NET6.Contracts;
 using HotelListing.NET6.Data;
 using HotelListing.NET6.Models.Users;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -15,16 +17,18 @@ namespace HotelListing.NET6.Repository
         private readonly IMapper _mapper;
         public UserManager<ApiUser> _userManager;
         private readonly IConfiguration _configuration;
+        private readonly ILogger<AuthManager> _logger;
         private ApiUser _user;
 
         public const string _loginProvider = "HotelListingApi";
         public const string _refreshToken = "RefreshToken";
 
-        public AuthManager(IMapper mapper, UserManager<ApiUser> userManager, IConfiguration configuraton)
+        public AuthManager(IMapper mapper, UserManager<ApiUser> userManager, IConfiguration configuraton, ILogger<AuthManager> logger)
         {
             _mapper = mapper;
             _userManager = userManager;
             _configuration = configuraton;
+            _logger = logger;
         }
 
         public async Task<string> CreateRefershToken()
@@ -72,8 +76,7 @@ namespace HotelListing.NET6.Repository
             bool isValidUser = false;
             try
             {
-                //var user = await _userManager.FindByEmailAsync(loginDto.Email);
-                //isValidUser = await _userManager.CheckPasswordAsync(user, loginDto.Password);
+                _logger.LogInformation($"Looking for user with email {loginDto.Email}");
 
                 _user = await _userManager.FindByEmailAsync(loginDto.Email);
                 if (_user is null)
@@ -85,10 +88,12 @@ namespace HotelListing.NET6.Repository
 
                 if (!isValidCredentials)
                 {
+                    _logger.LogWarning($"User with email {loginDto.Email} was not found.");
                     return default;
                 }
 
                 var token = await GenerateToken();
+                _logger.LogInformation($"Token generated for user {loginDto.Email} | Token: {token}");
                 return new AuthResponseDto { Token= token , UserId = _user.Id, RefreshToken = await CreateRefershToken() };
             }
             catch (Exception ex) { }
